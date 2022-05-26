@@ -1,0 +1,1 @@
+Principle Studios wrapper for Salesforce to ensure safe SOQL queries.
