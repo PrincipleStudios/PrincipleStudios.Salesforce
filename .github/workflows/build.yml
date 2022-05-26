@@ -36,8 +36,8 @@ jobs:
         fi
       env:
         IS_PRERELEASE: ${{ github.ref != 'refs/heads/main' && github.sha || '' }}
-    # - name: Test
-    #   run: dotnet test --no-build --verbosity normal --configuration Release
+    - name: Test
+      run: dotnet test --no-build --verbosity normal --configuration Release
 
     - name: Publish tool to GitHub registry if new version number
       if: ${{ github.ref != 'refs/heads/main' }}
