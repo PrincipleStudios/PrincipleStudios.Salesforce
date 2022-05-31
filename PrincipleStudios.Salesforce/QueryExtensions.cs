@@ -88,7 +88,7 @@ public static class QueryExtensions
             throw new ArgumentNullException(nameof(query));
         }
 
-        apiVersion = apiVersion ?? ((BaseHttpClient)client).GetApiVersion();
+        apiVersion = apiVersion ?? (client as JsonHttpClient)?.GetApiVersion();
         if (string.IsNullOrEmpty(apiVersion))
         {
             throw new ArgumentException($"'{nameof(apiVersion)}' cannot be null or empty.", nameof(apiVersion));
@@ -111,7 +111,7 @@ public static class QueryExtensions
             throw new ArgumentNullException(nameof(query));
         }
 
-        apiVersion = apiVersion ?? ((BaseHttpClient)client).GetApiVersion();
+        apiVersion = apiVersion ?? (client as JsonHttpClient)?.GetApiVersion();
         if (string.IsNullOrEmpty(apiVersion))
         {
             throw new ArgumentException($"'{nameof(apiVersion)}' cannot be null or empty.", nameof(apiVersion));
