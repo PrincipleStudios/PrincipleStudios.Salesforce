@@ -1,5 +1,6 @@
 using Newtonsoft.Json.Linq;
 using Salesforce.Common;
+using Salesforce.Common.Internals;
 using Salesforce.Common.Models.Json;
 using System;
 using System.Collections.Generic;
@@ -75,7 +76,7 @@ public static class QueryExtensions
 
     private static readonly Regex soqlTrim = new Regex(@"\s+", RegexOptions.Compiled);
 
-    public static async Task<QueryResult<JObject>> QueryAsync(this IJsonHttpClient client, FormattableString query, string apiVersion, bool skipTrim = false)
+    public static async Task<QueryResult<JObject>> QueryAsync(this IJsonHttpClient client, FormattableString query, string? apiVersion = null, bool skipTrim = false)
     {
         if (client is null)
         {
@@ -87,6 +88,7 @@ public static class QueryExtensions
             throw new ArgumentNullException(nameof(query));
         }
 
+        apiVersion = apiVersion ?? (client as JsonHttpClient)?.GetApiVersion();
         if (string.IsNullOrEmpty(apiVersion))
         {
             throw new ArgumentException($"'{nameof(apiVersion)}' cannot be null or empty.", nameof(apiVersion));
@@ -97,7 +99,7 @@ public static class QueryExtensions
         return await client.HttpGetAsync<QueryResult<JObject>>(new Uri($"services/data/{apiVersion}/query?q={Uri.EscapeDataString(q.FinalQuery)}", UriKind.Relative)).ConfigureAwait(false);
     }
 
-    public static async Task<JObject> SearchAsync(this IJsonHttpClient client, FormattableString query, string apiVersion, bool skipTrim = false)
+    public static async Task<JObject> SearchAsync(this IJsonHttpClient client, FormattableString query, string? apiVersion = null, bool skipTrim = false)
     {
         if (client is null)
         {
@@ -109,6 +111,7 @@ public static class QueryExtensions
             throw new ArgumentNullException(nameof(query));
         }
 
+        apiVersion = apiVersion ?? (client as JsonHttpClient)?.GetApiVersion();
         if (string.IsNullOrEmpty(apiVersion))
         {
             throw new ArgumentException($"'{nameof(apiVersion)}' cannot be null or empty.", nameof(apiVersion));
