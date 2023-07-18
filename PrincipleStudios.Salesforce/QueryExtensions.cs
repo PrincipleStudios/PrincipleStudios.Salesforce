@@ -78,28 +78,10 @@ public static class QueryExtensions
 
     public static async Task<QueryResult<JObject>> QueryAsync(this IJsonHttpClient client, FormattableString query, string? apiVersion = null, bool skipTrim = false)
     {
-        if (client is null)
-        {
-            throw new ArgumentNullException(nameof(client));
-        }
-
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
-
-        apiVersion = apiVersion ?? (client as JsonHttpClient)?.GetApiVersion();
-        if (string.IsNullOrEmpty(apiVersion))
-        {
-            throw new ArgumentException($"'{nameof(apiVersion)}' cannot be null or empty.", nameof(apiVersion));
-        }
-
-        var q = query.ToSoqlQuery(skipTrim);
-
-        return await client.HttpGetAsync<QueryResult<JObject>>(new Uri($"services/data/{apiVersion}/query?q={Uri.EscapeDataString(q.FinalQuery)}", UriKind.Relative)).ConfigureAwait(false);
+        return await client.QueryAsync<JObject>(query, apiVersion, skipTrim).ConfigureAwait(false);
     }
 
-    public static async Task<JObject> SearchAsync(this IJsonHttpClient client, FormattableString query, string? apiVersion = null, bool skipTrim = false)
+    public static async Task<QueryResult<T>> QueryAsync<T>(this IJsonHttpClient client, FormattableString query, string? apiVersion = null, bool skipTrim = false)
     {
         if (client is null)
         {
@@ -119,7 +101,35 @@ public static class QueryExtensions
 
         var q = query.ToSoqlQuery(skipTrim);
 
-        return await client.HttpGetAsync<JObject>(new Uri($"services/data/{apiVersion}/search/?q={Uri.EscapeDataString(q.FinalQuery)}", UriKind.Relative)).ConfigureAwait(false);
+        return await client.HttpGetAsync<QueryResult<T>>(new Uri($"services/data/{apiVersion}/query?q={Uri.EscapeDataString(q.FinalQuery)}", UriKind.Relative)).ConfigureAwait(false);
+    }
+
+    public static async Task<JObject> SearchAsync(this IJsonHttpClient client, FormattableString query, string? apiVersion = null, bool skipTrim = false)
+    {
+        return await client.SearchAsync<JObject>(query, apiVersion, skipTrim).ConfigureAwait(false);
+    }
+
+    public static async Task<T> SearchAsync<T>(this IJsonHttpClient client, FormattableString query, string? apiVersion = null, bool skipTrim = false)
+    {
+        if (client is null)
+        {
+            throw new ArgumentNullException(nameof(client));
+        }
+
+        if (query is null)
+        {
+            throw new ArgumentNullException(nameof(query));
+        }
+
+        apiVersion = apiVersion ?? (client as JsonHttpClient)?.GetApiVersion();
+        if (string.IsNullOrEmpty(apiVersion))
+        {
+            throw new ArgumentException($"'{nameof(apiVersion)}' cannot be null or empty.", nameof(apiVersion));
+        }
+
+        var q = query.ToSoqlQuery(skipTrim);
+
+        return await client.HttpGetAsync<T>(new Uri($"services/data/{apiVersion}/search/?q={Uri.EscapeDataString(q.FinalQuery)}", UriKind.Relative)).ConfigureAwait(false);
     }
 
     public static SalesforceQuery ToSoqlQuery(this FormattableString query, bool skipTrim = false)
