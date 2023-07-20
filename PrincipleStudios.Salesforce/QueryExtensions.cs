@@ -81,6 +81,9 @@ public static class QueryExtensions
         return await client.QueryAsync<JObject>(query, apiVersion, skipTrim).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Note: Deserialization done via Newtonsoft.Json
+    /// </summary>
     public static async Task<QueryResult<T>> QueryAsync<T>(this IJsonHttpClient client, FormattableString query, string? apiVersion = null, bool skipTrim = false)
     {
         if (client is null)
@@ -109,6 +112,9 @@ public static class QueryExtensions
         return await client.SearchAsync<JObject>(query, apiVersion, skipTrim).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Note: Deserialization done via Newtonsoft.Json
+    /// </summary>
     public static async Task<T> SearchAsync<T>(this IJsonHttpClient client, FormattableString query, string? apiVersion = null, bool skipTrim = false)
     {
         if (client is null)
