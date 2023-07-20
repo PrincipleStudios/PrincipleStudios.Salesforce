@@ -2,7 +2,7 @@
 <Project>
     <PropertyGroup>
         <Nullable>enable</Nullable>
-        <LangVersion>10</LangVersion>
+        <LangVersion>11</LangVersion>
         <RootNamespace>PrincipleStudios.Salesforce</RootNamespace>
         <AnalysisMode>AllEnabledByDefault</AnalysisMode>
         <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
@@ -12,7 +12,7 @@
 
     
     <PropertyGroup>
-        <VersionPrefix>0.1.1</VersionPrefix>
+        <VersionPrefix>0.1.2</VersionPrefix>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -24,7 +24,7 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <PackageIcon>principle_square.png</PackageIcon>
         <PackageReadmeFile>readme.md</PackageReadmeFile>
-        <Copyright>2022 Principle Studios</Copyright>
+        <Copyright>2023 Principle Studios</Copyright>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
 
@@ -34,7 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.3">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>

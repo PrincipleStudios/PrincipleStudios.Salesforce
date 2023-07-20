@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Immutable;
-using System.Linq;
+﻿using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
 namespace PrincipleStudios.Salesforce;
@@ -40,7 +38,7 @@ public class FormattableStringBuilder
 
     public static FormattableStringBuilder From(FormattableString f) => new(f);
 
-    private class ConcatFormatter : IFormatProvider, ICustomFormatter
+    private sealed class ConcatFormatter : IFormatProvider, ICustomFormatter
     {
         public string Format(string? format, object? arg, IFormatProvider? formatProvider)
         {
