@@ -60,10 +60,23 @@ public class QueryExtensionsShould
 
         // Allow pre-escaped data
         yield return new object[] { new EscapedSoslQuery("foo*bar"), "{foo*bar}" };
-        
+
         // Allow pre-escaped query
         yield return new object[] { new EscapedQuery("select id from foo where bar = '1'"), "select id from foo where bar = '1'" };
         yield return new object[] { new EscapedQuery("select id from foo where bar = '    '"), "select id from foo where bar = '    '" };
+
+        // Allow nested formattable strings
+        var nestedArguments = new FormattableString[]
+        {
+            $"Field1 = {1}",
+            $"  AND Field2 = 'test'"
+        };
+        var querybuilder = nestedArguments.Aggregate(new FormattableStringBuilder($"WHERE "), (builder, argument) => builder.Add(argument));
+
+        yield return new object[]
+        {
+            querybuilder.Build(), "WHERE Field1 = 1 AND Field2 = 'test'"
+        };
     }
 
     [Fact]

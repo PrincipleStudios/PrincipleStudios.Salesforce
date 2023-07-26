@@ -3,6 +3,7 @@ using Salesforce.Common;
 using Salesforce.Common.Internals;
 using Salesforce.Common.Models.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -37,7 +38,7 @@ public static class QueryExtensions
         if (query is null) return EscapedSoslQuery.Empty;
         return new EscapedSoslQuery(SoslReservedCharacters.Replace(query, match => "\\" + match.Value));
     }
-    private static string EscapeSoqlObject(object? input)
+    private static string EscapeSoqlObject(object? input, bool skipTrim)
     {
         return input switch
         {
@@ -67,8 +68,14 @@ public static class QueryExtensions
             // Query is already escaped
             EscapedQuery { Value: var s } => s,
             // Handle lists
-            IEnumerable<object> list => $"({string.Join(",", list.Select(EscapeSoqlObject))})",
-            System.Collections.IEnumerable list => EscapeSoqlObject(list.Cast<object>()),
+            IEnumerable<object> list => $"({string.Join(",", list.Select(i => EscapeSoqlObject(i, skipTrim)))})",
+            System.Collections.IEnumerable list => EscapeSoqlObject(list.Cast<object>(), skipTrim),
+            FormattableString fs => string.Format(
+                CultureInfo.InvariantCulture,
+                skipTrim
+                    ? fs.Format
+                    : soqlTrim.Replace(fs.Format.Trim(), " "),
+                fs.GetArguments().Select(arg => EscapeSoqlObject(arg, skipTrim)).ToArray()),
             // force proper type handling
             _ => throw new UnknownSalesforceParameterException(),
         };
@@ -146,7 +153,7 @@ public static class QueryExtensions
         }
 
         var args = query.GetArguments()
-            .Select(EscapeSoqlObject)
+            .Select(arg => EscapeSoqlObject(arg, skipTrim))
             .ToArray();
         var trimmed = skipTrim
                 ? query.Format
