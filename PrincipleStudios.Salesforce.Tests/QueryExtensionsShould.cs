@@ -17,7 +17,7 @@ public class QueryExtensionsShould
         var username = "test@example.com";
 
         // Act/Assert
-        TestHandlingParamaters($"SELECT Id FROM User WHERE Username={username}",
+        TestHandlingParameters($"SELECT Id FROM User WHERE Username={username}",
             "SELECT Id FROM User WHERE Username='test@example.com'",
             "SELECT Id FROM User WHERE Username={0}");
     }
@@ -41,7 +41,7 @@ public class QueryExtensionsShould
     [Theory]
     public void HandleParameterReplacementOfManyTypes(object? parameter, string expected)
     {
-        TestHandlingParamaters($"{parameter}", expected, "{0}");
+        TestHandlingParameters($"{parameter}", expected, "{0}");
     }
 
     public static IEnumerable<object[]> ParameterReplacement()
@@ -66,16 +66,19 @@ public class QueryExtensionsShould
         yield return new object[] { new EscapedQuery("select id from foo where bar = '    '"), "select id from foo where bar = '    '" };
 
         // Allow nested formattable strings
-        var nestedArguments = new FormattableString[]
-        {
-            $"Field1 = {1}",
-            $"  AND Field2 = 'test'"
-        };
-        var querybuilder = nestedArguments.Aggregate(new FormattableStringBuilder($"WHERE "), (builder, argument) => builder.Add(argument));
-
+        FormattableString query = $"WHERE Field1 = {1} AND Field2 = 'test'";
         yield return new object[]
         {
-            querybuilder.Build(), "WHERE Field1 = 1 AND Field2 = 'test'"
+            query, "WHERE Field1 = 1 AND Field2 = 'test'"
+        };
+
+        // Allow recursively nested formattable strings
+        FormattableString clause = $"Id = {"some-user-id"}";
+        FormattableString fullSoqlQuery = $"SELECT Id FROM User WHERE {clause}";
+        yield return new object[]
+        {
+            fullSoqlQuery,
+            "SELECT Id FROM User WHERE Id = 'some-user-id'"
         };
     }
 
@@ -86,7 +89,7 @@ public class QueryExtensionsShould
         var username = "test@example.com";
 
         // Act/Assert
-        TestHandlingParamaters(@$"
+        TestHandlingParameters(@$"
             SELECT Id
             FROM User
             WHERE Username={username}
@@ -102,7 +105,7 @@ public class QueryExtensionsShould
         var username = "test@example.com";
 
         // Act/Assert
-        TestHandlingParamaters($"SELECT Id\r\nFROM User\rWHERE\nUsername={username}",
+        TestHandlingParameters($"SELECT Id\r\nFROM User\rWHERE\nUsername={username}",
             "SELECT Id FROM User WHERE Username='test@example.com'",
             "SELECT Id FROM User WHERE Username={0}");
     }
@@ -113,7 +116,7 @@ public class QueryExtensionsShould
         Assert.Throws<UnknownSalesforceParameterException>(() => QueryExtensions.ToSoqlQuery($"{new object()}"));
     }
 
-    private static void TestHandlingParamaters(FormattableString original, string expectedFinalQuery, string expectedTrimmed)
+    private static void TestHandlingParameters(FormattableString original, string expectedFinalQuery, string expectedTrimmed)
     {
         // Act
         var actual = QueryExtensions.ToSoqlQuery(original);
