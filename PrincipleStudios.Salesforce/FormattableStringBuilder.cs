@@ -5,18 +5,21 @@ namespace PrincipleStudios.Salesforce;
 
 public class FormattableStringBuilder
 {
-    private readonly string format;
+    private readonly ImmutableList<string> formatParts;
     private readonly ImmutableList<object?> arguments;
 
     public static readonly FormattableStringBuilder Empty = new FormattableStringBuilder();
     private static readonly ConcatFormatter concatFormatter = new ConcatFormatter();
 
-    private FormattableStringBuilder() : this(string.Empty, ImmutableList<object?>.Empty) { }
-    public FormattableStringBuilder(FormattableString initial) : this((initial ?? throw new ArgumentNullException(nameof(initial))).Format, initial.GetArguments().ToImmutableList()) { }
+    private FormattableStringBuilder() : this(ImmutableList<string>.Empty, ImmutableList<object?>.Empty) { }
+    public FormattableStringBuilder(FormattableString initial) : this(
+        ImmutableList<string>.Empty.Add(initial?.Format ?? throw new ArgumentNullException(nameof(initial))),
+        initial.GetArguments().ToImmutableList()
+    ) { }
 
-    private FormattableStringBuilder(string format, ImmutableList<object?> arguments)
+    private FormattableStringBuilder(ImmutableList<string> formatParts, ImmutableList<object?> arguments)
     {
-        this.format = format;
+        this.formatParts = formatParts;
         this.arguments = arguments;
     }
 
@@ -29,12 +32,12 @@ public class FormattableStringBuilder
 
         var newArgs = next.GetArguments();
         return new FormattableStringBuilder(
-            format + string.Format(concatFormatter, next.Format, args: Enumerable.Range(arguments.Count, newArgs.Length).Select(i => (object?)(i)).ToArray()),
+            formatParts.Add(string.Format(concatFormatter, next.Format, args: Enumerable.Range(arguments.Count, newArgs.Length).Select(i => (object?)(i)).ToArray())),
             arguments.AddRange(newArgs)
         );
     }
 
-    public FormattableString Build() => FormattableStringFactory.Create(format, arguments.ToArray());
+    public FormattableString Build() => FormattableStringFactory.Create(string.Join(null, formatParts), arguments.ToArray());
 
     public static FormattableStringBuilder From(FormattableString f) => new(f);
 
