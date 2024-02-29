@@ -33,6 +33,22 @@ public class SalesforceClientShould
     }
 
     [Fact]
+    public async Task Issue_unsafe_soql_queries()
+    {
+        // Arrange
+        var expected = new[] { new SampleObject("foo") };
+        FormattableString query = $"SELECT Id FROM User WHERE Username={"test@example.com"}";
+        mock.SetupSalesforceQuery(query, defaultApiVersion).ReturnsSalesforceQueryResult(expected).Verifiable();
+
+        // Act
+        var result = await client.UnsafeQueryAsync<SampleObject>(query.ToSoqlQuery().FinalQuery);
+
+        // Assert
+        Assert.Equal(expected, result.Records);
+        mock.Verify(query.ToSalesforceQueryCallExpression(defaultApiVersion), Times.Once());
+    }
+
+    [Fact]
     public async Task Issue_soql_queries_with_overridden_api_version()
     {
         const string overriddenApiVersion = "v55.0";
@@ -99,6 +115,22 @@ public class SalesforceClientShould
 
         // Act
         var result = await client.SearchAsync<SampleObject>(search);
+
+        // Assert
+        Assert.Equal(expected, result.Records);
+        mock.Verify(search.ToSalesforceSearchCallExpression(defaultApiVersion), Times.Once());
+    }
+
+    [Fact]
+    public async Task Issue_unsafe_sosl_searches()
+    {
+        // Arrange
+        var expected = new[] { new SampleObject("foo") };
+        FormattableString search = $"FIND {"example.com".EscapeSoslQuery()} RETURNING User(Id)";
+        mock.SetupSalesforceSearch(search, defaultApiVersion).ReturnsSalesforceSearchResult(expected).Verifiable();
+
+        // Act
+        var result = await client.UnsafeSearchAsync<SampleObject>(search.ToSoslQuery().FinalQuery);
 
         // Assert
         Assert.Equal(expected, result.Records);
