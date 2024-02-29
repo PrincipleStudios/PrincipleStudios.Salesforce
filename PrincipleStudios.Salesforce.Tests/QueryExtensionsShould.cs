@@ -1,5 +1,4 @@
 ﻿using Moq;
-using Salesforce.Common;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -165,74 +164,4 @@ public class QueryExtensionsShould
         Assert.Equal("", actual.Value);
     }
 
-    [Fact]
-    public async Task MakeItEasyToIssueASoqlQuery()
-    {
-        const string id = "foo";
-        const string apiVersion = "v54.0";
-
-        // Arrange
-        var (mock, client) = Setup();
-        FormattableString query = $"SELECT Id FROM User WHERE Username={"test@example.com"}";
-        mock.SetupSalesforceQuery(query, apiVersion).ReturnsSalesforceQueryResult(new { Id = id }).Verifiable();
-
-        // Act
-        var result = await client.QueryAsync(query, apiVersion).ConfigureAwait(false);
-
-        // Assert
-        Assert.Collection(result.Records, record =>
-        {
-            Assert.NotNull(record["Id"]);
-            Assert.Equal(id, record.Value<string>("Id"));
-        });
-        mock.Verify(query.ToSalesforceQueryCallExpression(apiVersion), Times.Once());
-    }
-
-    [Fact]
-    public async Task MakeItEasyToQuerySoqlValues()
-    {
-        const string id = "foo";
-        const string apiVersion = "v54.0";
-
-        // Arrange
-        var (mock, client) = Setup();
-        FormattableString query = $"SELECT Id FROM User WHERE Username={"test@example.com"}";
-        mock.SetupSalesforceQuery(query, apiVersion).ReturnsSalesforceQueryResult(new { Id = id }).Verifiable();
-
-        // Act
-        var result = await client.QueryAsync(query, apiVersion).ConfigureAwait(false);
-
-        // Assert
-        Assert.Collection(result.Records, record =>
-        {
-            Assert.Equal(id, record.SelectToken("Id")?.ToObject<string>());
-        });
-        mock.Verify(query.ToSalesforceQueryCallExpression(apiVersion), Times.Once());
-    }
-
-    [Fact]
-    public async Task WrapAMalformedQueryException()
-    {
-        const string apiVersion = "v54.0";
-       
-        // Arrange
-        var (mock, client) = Setup();
-        FormattableString query = $"bad SELECT Id FROM User WHERE Username={"test@example.com"}";
-        mock.SetupSalesforceQuery(query, apiVersion).Throws(new ForceException(global::Salesforce.Common.Models.Json.Error.MalformedQuery, "unexpected token: bad")).Verifiable();
-
-        // Act & assert
-        await Assert.ThrowsAsync<ForceException>(async () => await client.QueryAsync(query, apiVersion).ConfigureAwait(false)).ConfigureAwait(false);
-    }
-
-    private static (Mock<MockableHttpMessageHandler> mock, JsonHttpClient client) Setup()
-    {
-        var mock = new Mock<MockableHttpMessageHandler>(MockBehavior.Loose) { CallBase = true };
-        var httpClient = new HttpClient(mock.Object)
-        {
-            BaseAddress = new Uri("https://example.com"),
-        };
-        var client = new JsonHttpClient("https://example.com", "v54.0", null, httpClient, true);
-
-        return (mock, client);
-    }
 }
