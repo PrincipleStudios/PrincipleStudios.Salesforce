@@ -1,44 +1,56 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace PrincipleStudios.Salesforce;
+
+/// <summary>
+/// A Salesforce client with full functionality
+/// </summary>
+public interface ISalesforceClient : ISalesforceHttpClient, ISalesforceQueryClient, ISalesforceSearchClient
+{
+}
 
 /// <summary>
 /// A Salesforce HTTP client.
 /// </summary>
 public interface ISalesforceHttpClient
 {
-    /// <summary>
-    /// The default API version for this client.
-    /// 
-    /// Should include the `v`, such as `v58.0`.
-    /// </summary>
-    string ApiVersion { get; }
+    Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken);
+}
 
+public interface ISalesforceQueryClient
+{
     /// <summary>
     /// Issues a SOQL query.
     /// </summary>
     /// <typeparam name="T">The type of each record</typeparam>
     /// <param name="query">The SOQL query as a FormattableString.</param>
     /// <param name="options">Options for the SOQL query. Optional.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>The parsed response from Salesforce. <seealso cref="QueryResponse<>"/></returns>
-    Task<QueryResponse<T>> QueryAsync<T>(FormattableString query, SalesforceRequestOptions options = default);
+    Task<QueryResponse<T>> QueryAsync<T>(FormattableString query, SalesforceRequestOptions options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the next page of data from a SOQL query.
     /// </summary>
     /// <typeparam name="T">The type of each record</typeparam>
     /// <param name="query">The response from the previous request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>The parsed response from Salesforce. <seealso cref="QueryResponse<>"/></returns>
-    Task<QueryResponse<T>> NextAsync<T>(QueryResponse<T> query);
+    Task<QueryResponse<T>> NextAsync<T>(QueryResponse<T> query, CancellationToken cancellationToken = default);
+}
 
+public interface ISalesforceSearchClient
+{
     /// <summary>
     /// Issues a SOSL search.
     /// </summary>
     /// <typeparam name="T">The type of each record</typeparam>
     /// <param name="query">The SOSL query.</param>
     /// <param name="options">Options for the SOQL query. Optional.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>The parsed response from Salesforce. <seealso cref="SearchResponse<>"/></returns>
-    Task<SearchResponse<T>> SearchAsync<T>(FormattableString query, SalesforceRequestOptions options = default);
+    Task<SearchResponse<T>> SearchAsync<T>(FormattableString query, SalesforceRequestOptions options = default, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -58,6 +70,10 @@ public record struct SalesforceRequestOptions
     /// sending to Salesforce. Otherwise, extra whitespace will be collapsed.
     /// </summary>
     public bool SkipTrim { get; init; }
+    /// <summary>
+    /// If provided, the JSON Serializer options to use for the response
+    /// </summary>
+    public JsonSerializerOptions? SerializerOptions { get; init; }
 }
 
 /// <summary>
