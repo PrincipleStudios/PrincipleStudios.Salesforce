@@ -111,7 +111,7 @@ public static class QueryExtensions
 
         var q = query.ToSoqlQuery(skipTrim);
 
-        return await client.HttpGetAsync<QueryResult<T>>(new Uri($"services/data/{apiVersion}/query?q={Uri.EscapeDataString(q.FinalQuery)}", UriKind.Relative)).ConfigureAwait(false);
+        return await client.HttpGetAsync<QueryResult<T>>(new Uri($"services/data/{apiVersion}/query/?q={Uri.EscapeDataString(q.FinalQuery)}", UriKind.Relative)).ConfigureAwait(false);
     }
 
     public static async Task<JObject> SearchAsync(this IJsonHttpClient client, FormattableString query, string? apiVersion = null, bool skipTrim = false)
@@ -177,4 +177,4 @@ public record struct EscapedQuery(string Value)
     public static readonly EscapedQuery Empty = new EscapedQuery(string.Empty);
 }
 
-public record struct SalesforceQuery(string Trimmed, string FinalQuery);
+public record struct SalesforceQuery(string Format, string FinalQuery);

@@ -10,9 +10,9 @@ namespace PrincipleStudios.Salesforce;
 
 public static class ApiExtensionMethods
 {
-    public static Moq.Language.Flow.IReturnsResult<MockableHttpMessageHandler> ReturnsJsonResponse(
+    public static Moq.Language.Flow.IReturnsResult<MockableHttpMessageHandler> ReturnsJsonResponse<T>(
         this Moq.Language.IReturns<MockableHttpMessageHandler, HttpResponseMessage> target,
-        object response,
+        T response,
         HttpStatusCode httpStatusCode = HttpStatusCode.OK)
     {
         if (target is null)
@@ -28,7 +28,7 @@ public static class ApiExtensionMethods
         return target.Returns(new HttpResponseMessage
         {
             StatusCode = httpStatusCode,
-            Content = new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(response), Encoding.UTF8, "application/json"),
+            Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(response), Encoding.UTF8, "application/json"),
         });
     }
 }

@@ -123,7 +123,7 @@ public class QueryExtensionsShould
 
         // Assert
         Assert.Equal(expectedFinalQuery, actual.FinalQuery);
-        Assert.Equal(expectedTrimmed, actual.Trimmed);
+        Assert.Equal(expectedTrimmed, actual.Format);
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public class QueryExtensionsShould
 
         // Assert
         Assert.Equal(string.Format(System.Globalization.CultureInfo.InvariantCulture, query.Format, "'test@example.com'"), actual.FinalQuery);
-        Assert.Equal(string.Format(System.Globalization.CultureInfo.InvariantCulture, query.Format, "{0}"), actual.Trimmed);
+        Assert.Equal(string.Format(System.Globalization.CultureInfo.InvariantCulture, query.Format, "{0}"), actual.Format);
     }
 
     [Fact]
@@ -174,7 +174,7 @@ public class QueryExtensionsShould
         // Arrange
         var (mock, client) = Setup();
         FormattableString query = $"SELECT Id FROM User WHERE Username={"test@example.com"}";
-        mock.SetupSalesforceQuery(query, apiVersion).ReturnsSalesforceResult(new { Id = id }).Verifiable();
+        mock.SetupSalesforceQuery(query, apiVersion).ReturnsSalesforceQueryResult(new { Id = id }).Verifiable();
 
         // Act
         var result = await client.QueryAsync(query, apiVersion).ConfigureAwait(false);
@@ -197,7 +197,7 @@ public class QueryExtensionsShould
         // Arrange
         var (mock, client) = Setup();
         FormattableString query = $"SELECT Id FROM User WHERE Username={"test@example.com"}";
-        mock.SetupSalesforceQuery(query, apiVersion).ReturnsSalesforceResult(new { Id = id }).Verifiable();
+        mock.SetupSalesforceQuery(query, apiVersion).ReturnsSalesforceQueryResult(new { Id = id }).Verifiable();
 
         // Act
         var result = await client.QueryAsync(query, apiVersion).ConfigureAwait(false);

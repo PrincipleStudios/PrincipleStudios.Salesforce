@@ -15,6 +15,12 @@ public interface ISalesforceClient : ISalesforceHttpClient, ISalesforceQueryClie
 /// </summary>
 public interface ISalesforceHttpClient
 {
+    /// <summary>
+    /// Sends a raw request to Salesforce via the client
+    /// </summary>
+    /// <param name="request">The request to send</param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+    /// <returns>The response message, which the caller is responsible for disposing.</returns>
     Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken);
 }
 
@@ -34,10 +40,10 @@ public interface ISalesforceQueryClient
     /// Retrieves the next page of data from a SOQL query.
     /// </summary>
     /// <typeparam name="T">The type of each record</typeparam>
-    /// <param name="query">The response from the previous request.</param>
+    /// <param name="previous">The response from the previous request.</param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>The parsed response from Salesforce. <seealso cref="QueryResponse<>"/></returns>
-    Task<QueryResponse<T>> NextAsync<T>(QueryResponse<T> query, CancellationToken cancellationToken = default);
+    Task<QueryResponse<T>> NextAsync<T>(QueryResponse<T> previous, SalesforceRequestOptions options = default, CancellationToken cancellationToken = default);
 }
 
 public interface ISalesforceSearchClient
@@ -76,12 +82,17 @@ public record struct SalesforceRequestOptions
     public JsonSerializerOptions? SerializerOptions { get; init; }
 }
 
+public static class QueryResponse
+{
+    public static QueryResponse<T> Empty<T>() => new QueryResponse<T> { Done = true, Records = Enumerable.Empty<T>() };
+}
+
 /// <summary>
 /// Response type for SOQL queries
 /// </summary>
 /// <typeparam name="T">The type of each record</typeparam>
 /// <seealso href="https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_query.htm"/>
-public class QueryResponse<T>
+public record struct QueryResponse<T>
 {
     [JsonPropertyName("nextRecordsUrl")]
     public Uri? NextRecordsUrl { get; init; }
@@ -101,7 +112,7 @@ public class QueryResponse<T>
 /// </summary>
 /// <typeparam name="T">The type of each record</typeparam>
 /// <seealso href="https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_search.htm"/>
-public class SearchResponse<T>
+public record struct SearchResponse<T>
 {
     [JsonPropertyName("searchRecords")]
     public required IEnumerable<T> Records { get; init; }

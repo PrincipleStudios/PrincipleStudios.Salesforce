@@ -6,7 +6,15 @@
     <Nullable>enable</Nullable>
 
     <IsPackable>false</IsPackable>
+
+	<!-- Tests do not need to dispose -->
     <NoWarn>$(NoWarn);CA2000</NoWarn>
+
+	<!-- Tests do not need to call ConfigureAwait -->
+    <NoWarn>$(NoWarn);CA2007</NoWarn>
+	  
+	<!-- Test naming uses underscores to improve readability in various reports -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
