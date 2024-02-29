@@ -49,9 +49,9 @@ public class SalesforceClient : ISalesforceClient
         if (query is null)
             throw new ArgumentNullException(nameof(query));
 
-        var q = query.ToSoqlQuery(options.SkipTrim);
-        var fullUrl = new Uri(instanceUrl, $"services/data/{options.ApiVersion ?? apiVersion}/search/?q={Uri.EscapeDataString(q.FinalQuery)}");
+        var q = query.ToSoslQuery(options.SkipTrim);
         logger.LogSoslSearch(q.FinalQuery, q.Format);
+        var fullUrl = new Uri(instanceUrl, $"services/data/{options.ApiVersion ?? apiVersion}/search/?q={Uri.EscapeDataString(q.FinalQuery)}");
 
         using var response = await httpClient.GetAsync(fullUrl, cancellationToken).ConfigureAwait(false);
         var result = await DeserializeFromResponseStreamAsync<SearchResponse<T>>(response, options.SerializerOptions, cancellationToken).ConfigureAwait(false);

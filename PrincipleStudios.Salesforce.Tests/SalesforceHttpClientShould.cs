@@ -94,15 +94,15 @@ public class SalesforceClientShould
     {
         // Arrange
         var expected = new[] { new SampleObject("foo") };
-        FormattableString query = $"FIND {"example.com"} RETURNING User(Id)";
-        mock.SetupSalesforceSearch(query, defaultApiVersion).ReturnsSalesforceSearchResult(expected).Verifiable();
+        FormattableString search = $"FIND {"example.com".EscapeSoslQuery()} RETURNING User(Id)";
+        mock.SetupSalesforceSearch(search, defaultApiVersion).ReturnsSalesforceSearchResult(expected).Verifiable();
 
         // Act
-        var result = await client.SearchAsync<SampleObject>(query);
+        var result = await client.SearchAsync<SampleObject>(search);
 
         // Assert
         Assert.Equal(expected, result.Records);
-        mock.Verify(query.ToSalesforceSearchCallExpression(defaultApiVersion), Times.Once());
+        mock.Verify(search.ToSalesforceSearchCallExpression(defaultApiVersion), Times.Once());
     }
 
     [Fact]
@@ -112,15 +112,15 @@ public class SalesforceClientShould
 
         // Arrange
         var expected = new[] { new SampleObject("foo") };
-        FormattableString query = $"FIND {"example.com"} RETURNING User(Id)";
-        mock.SetupSalesforceSearch(query, overriddenApiVersion).ReturnsSalesforceSearchResult(expected).Verifiable();
+        FormattableString search = $"FIND {"example.com".EscapeSoslQuery()} RETURNING User(Id)";
+        mock.SetupSalesforceSearch(search, overriddenApiVersion).ReturnsSalesforceSearchResult(expected).Verifiable();
 
         // Act
-        var result = await client.SearchAsync<SampleObject>(query, new() { ApiVersion = overriddenApiVersion });
+        var result = await client.SearchAsync<SampleObject>(search, new() { ApiVersion = overriddenApiVersion });
 
         // Assert
         Assert.Equal(expected, result.Records);
-        mock.Verify(query.ToSalesforceSearchCallExpression(overriddenApiVersion), Times.Once());
+        mock.Verify(search.ToSalesforceSearchCallExpression(overriddenApiVersion), Times.Once());
     }
 
     [Fact]
@@ -129,11 +129,10 @@ public class SalesforceClientShould
         // Arrange
         var expectedResponse = new HttpResponseMessage();
         var request = new HttpRequestMessage();
-        FormattableString query = $"FIND {"example.com"} RETURNING User(Id)";
         mock.Setup(h => h.Send(request)).Returns(expectedResponse).Verifiable();
 
         // Act
-        var actualResponse = await client.SendAsync(request); ;
+        var actualResponse = await client.SendAsync(request);
 
         // Assert
         Assert.Equal(expectedResponse, actualResponse);

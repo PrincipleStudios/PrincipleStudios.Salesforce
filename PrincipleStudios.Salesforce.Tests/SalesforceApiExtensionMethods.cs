@@ -57,7 +57,7 @@ public static class SalesforceApiExtensionMethods
 
     public static Expression<Func<MockableHttpMessageHandler, HttpResponseMessage>> ToSalesforceSearchCallExpression(this FormattableString query, string apiVersion, bool skipTrim = false)
     {
-        var finalQuery = Uri.EscapeDataString(query.ToSoqlQuery(skipTrim).FinalQuery);
+        var finalQuery = Uri.EscapeDataString(query.ToSoslQuery(skipTrim).FinalQuery);
         var expectedPath = $"/services/data/{apiVersion}/search/?q={finalQuery}";
         return m => m.Send(It.Is<HttpRequestMessage>(req => ValidRequest(req, skipTrim, expectedPath)));
     }

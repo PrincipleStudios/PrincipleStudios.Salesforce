@@ -94,6 +94,10 @@ public static class QueryExtensions
         );
         return new(trimmed, finalQuery);
     }
+
+    public static SalesforceQuery ToSoslQuery(this FormattableString query, bool skipTrim = false) =>
+        // It is my understanding that SOQL and SOSL are escaped the same way. Providing two separate methods just in case taht is not the case.
+        ToSoqlQuery(query, skipTrim);
 }
 
 public record struct EscapedSoslQuery(string Value)
