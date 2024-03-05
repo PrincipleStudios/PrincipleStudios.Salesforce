@@ -2,17 +2,20 @@
 <Project>
     <PropertyGroup>
         <Nullable>enable</Nullable>
-        <LangVersion>11</LangVersion>
+        <LangVersion>12</LangVersion>
         <RootNamespace>PrincipleStudios.Salesforce</RootNamespace>
         <AnalysisMode>AllEnabledByDefault</AnalysisMode>
         <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <WarningsAsErrors />
+
+        <!-- disabled because the recommendation is not supported in .NET Standard -->
+        <NoWarn>$(NoWarn);CA1510</NoWarn>
     </PropertyGroup>
 
     
     <PropertyGroup>
-        <VersionPrefix>0.1.4</VersionPrefix>
+        <VersionPrefix>0.2.0</VersionPrefix>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -24,7 +27,7 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <PackageIcon>principle_square.png</PackageIcon>
         <PackageReadmeFile>readme.md</PackageReadmeFile>
-        <Copyright>2023 Principle Studios</Copyright>
+        <Copyright>2024 Principle Studios</Copyright>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
 
@@ -34,7 +37,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.3">
+        <PackageReference Include="Microsoft.CodeAnalysis" Version="4.8.0">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>

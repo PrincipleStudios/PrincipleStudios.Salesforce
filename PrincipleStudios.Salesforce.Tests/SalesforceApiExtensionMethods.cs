@@ -1,11 +1,5 @@
 ﻿using Moq;
-using Salesforce.Common.Models.Json;
-using System;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace PrincipleStudios.Salesforce;
@@ -51,15 +45,20 @@ public static class SalesforceApiExtensionMethods
             throw new ArgumentException($"'{nameof(apiVersion)}' cannot be null or empty.", nameof(apiVersion));
         }
 
-        return target.Setup(query.ToSalesforceQueryCallExpression(apiVersion, skipTrim, true));
+        return target.Setup(query.ToSalesforceSearchCallExpression(apiVersion, skipTrim));
     }
 
-    public static Expression<Func<MockableHttpMessageHandler, HttpResponseMessage>> ToSalesforceQueryCallExpression(this FormattableString query, string apiVersion, bool skipTrim = false, bool isSearch = false)
+    public static Expression<Func<MockableHttpMessageHandler, HttpResponseMessage>> ToSalesforceQueryCallExpression(this FormattableString query, string apiVersion, bool skipTrim = false)
     {
         var finalQuery = Uri.EscapeDataString(query.ToSoqlQuery(skipTrim).FinalQuery);
-        var expectedPath = isSearch
-            ? $"/services/data/{apiVersion}/search/?q={finalQuery}"
-            : $"/services/data/{apiVersion}/query?q={finalQuery}";
+        var expectedPath = $"/services/data/{apiVersion}/query/?q={finalQuery}";
+        return m => m.Send(It.Is<HttpRequestMessage>(req => ValidRequest(req, skipTrim, expectedPath)));
+    }
+
+    public static Expression<Func<MockableHttpMessageHandler, HttpResponseMessage>> ToSalesforceSearchCallExpression(this FormattableString query, string apiVersion, bool skipTrim = false)
+    {
+        var finalQuery = Uri.EscapeDataString(query.ToSoslQuery(skipTrim).FinalQuery);
+        var expectedPath = $"/services/data/{apiVersion}/search/?q={finalQuery}";
         return m => m.Send(It.Is<HttpRequestMessage>(req => ValidRequest(req, skipTrim, expectedPath)));
     }
 
@@ -82,7 +81,7 @@ public static class SalesforceApiExtensionMethods
         return false;
     }
 
-    public static Moq.Language.Flow.IReturnsResult<MockableHttpMessageHandler> ReturnsSalesforceResult(this Moq.Language.IReturns<MockableHttpMessageHandler, HttpResponseMessage> target, params object[] records)
+    public static Moq.Language.Flow.IReturnsResult<MockableHttpMessageHandler> ReturnsSalesforceQueryResult<T>(this Moq.Language.IReturns<MockableHttpMessageHandler, HttpResponseMessage> target, params T[] records)
     {
         if (target is null)
         {
@@ -94,7 +93,7 @@ public static class SalesforceApiExtensionMethods
             throw new ArgumentNullException(nameof(records));
         }
 
-        return target.ReturnsJsonResponse(new QueryResult<object>
+        return target.ReturnsJsonResponse(new QueryResponse<T>
         {
             Records = records.ToList(),
             Done = true,
@@ -102,11 +101,11 @@ public static class SalesforceApiExtensionMethods
         });
     }
 
-    public static Moq.Language.Flow.IReturnsResult<MockableHttpMessageHandler> ReturnsSalesforceSearchResult(this Moq.Language.IReturns<MockableHttpMessageHandler, HttpResponseMessage> target, params object[] records)
+    public static Moq.Language.Flow.IReturnsResult<MockableHttpMessageHandler> ReturnsSalesforceSearchResult<T>(this Moq.Language.IReturns<MockableHttpMessageHandler, HttpResponseMessage> target, params T[] records)
     {
-        return target.ReturnsJsonResponse(new
+        return target.ReturnsJsonResponse(new SearchResponse<T>
         {
-            SearchRecords = records.ToList()
+            Records = records.ToList()
         });
     }
 }

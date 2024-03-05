@@ -8,7 +8,7 @@ namespace PrincipleStudios.Salesforce;
 
 public abstract class MockableHttpMessageHandler : DelegatingHandler
 {
-    private static readonly Regex salesforcePath = new Regex("^/services/data/v[0-9.]+/(?:search/|query)\\?q=(?<soql>.+)$", RegexOptions.Compiled);
+    private static readonly Regex salesforcePath = new Regex("^/services/data/v[0-9.]+/(?:search|query)/\\?q=(?<soql>.+)$", RegexOptions.Compiled);
     protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         if (request is null)
