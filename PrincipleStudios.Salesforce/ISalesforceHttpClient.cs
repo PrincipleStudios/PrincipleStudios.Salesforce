@@ -10,6 +10,10 @@ public interface ISalesforceClient : ISalesforceHttpClient, ISalesforceQueryClie
 {
 }
 
+public interface IUnsafeSalesforceClient : ISalesforceClient, IUnsafeSalesforceQueryClient, IUnsafeSalesforceSearchClient
+{
+}
+
 /// <summary>
 /// A Salesforce HTTP client.
 /// </summary>
@@ -30,11 +34,33 @@ public interface ISalesforceQueryClient
     /// Issues a SOQL query.
     /// </summary>
     /// <typeparam name="T">The type of each record</typeparam>
-    /// <param name="query">The SOQL query as a FormattableString.</param>
+    /// <param name="query">The SOQL query as a FormattableString. Parameters will be automatically escaped and enclosed with appropriate SOQL symbols, such as single quotes for strings.</param>
     /// <param name="options">Options for the SOQL query. Optional.</param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>The parsed response from Salesforce. <seealso cref="QueryResponse<>"/></returns>
     Task<QueryResponse<T>> QueryAsync<T>(FormattableString query, SalesforceRequestOptions options = default, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the next page of data from a SOQL query.
+    /// </summary>
+    /// <typeparam name="T">The type of each record</typeparam>
+    /// <param name="previous">The response from the previous request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+    /// <returns>The parsed response from Salesforce. <seealso cref="QueryResponse<>"/></returns>
+    Task<QueryResponse<T>> NextAsync<T>(QueryResponse<T> previous, SalesforceRequestOptions options = default, CancellationToken cancellationToken = default);
+}
+
+public interface IUnsafeSalesforceQueryClient
+{
+    /// <summary>
+    /// Issues a SOQL query.
+    /// </summary>
+    /// <typeparam name="T">The type of each record</typeparam>
+    /// <param name="query">The SOQL query.</param>
+    /// <param name="options">Options for the SOQL query. Optional.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+    /// <returns>The parsed response from Salesforce. <seealso cref="QueryResponse<>"/></returns>
+    Task<QueryResponse<T>> UnsafeQueryAsync<T>(string query, SalesforceRequestOptions options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the next page of data from a SOQL query.
@@ -52,11 +78,24 @@ public interface ISalesforceSearchClient
     /// Issues a SOSL search.
     /// </summary>
     /// <typeparam name="T">The type of each record</typeparam>
-    /// <param name="query">The SOSL query.</param>
+    /// <param name="query">The SOSL query as a FormattableString. Parameters will be automatically escaped and enclosed with appropriate SOSL symbols, such as single quotes for strings.</param>
     /// <param name="options">Options for the SOQL query. Optional.</param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>The parsed response from Salesforce. <seealso cref="SearchResponse<>"/></returns>
     Task<SearchResponse<T>> SearchAsync<T>(FormattableString query, SalesforceRequestOptions options = default, CancellationToken cancellationToken = default);
+}
+
+public interface IUnsafeSalesforceSearchClient
+{
+    /// <summary>
+    /// Issues a SOSL search.
+    /// </summary>
+    /// <typeparam name="T">The type of each record</typeparam>
+    /// <param name="query">The SOSL query.</param>
+    /// <param name="options">Options for the SOQL query. Optional.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+    /// <returns>The parsed response from Salesforce. <seealso cref="SearchResponse<>"/></returns>
+    Task<SearchResponse<T>> UnsafeSearchAsync<T>(string query, SalesforceRequestOptions options = default, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
